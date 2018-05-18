@@ -10,7 +10,7 @@ from lesospider.items import LesospiderItem
 class LesoSpider(scrapy.Spider):
     name = 'leso'
     start_urls = ['http://www.leso.cn/']
-    def __init__(self,keywords = '你好',limit=800,taskId = 4,*args,**kwargs):
+    def __init__(self,keywords = '一带一路',limit=300,taskId = 4,*args,**kwargs):
         super(LesoSpider, self).__init__(*args, **kwargs)
         self.keywords = keywords
         # keywords = 'hello'
@@ -47,7 +47,7 @@ class LesoSpider(scrapy.Spider):
             item['keywords'] = self.keywords
             item['task_id'] = self.task_id
             item['video_category']= video.get('categoryName','')
-            item['title'] = video.get('name','')
+            item['title'] = self.translation(video.get('name','')).strip()  # 视频标题
             item['play_count'] = video.get('playCount','')
             item['info'] = video.get('description','')
             item['video_time'] = video.get('duration','')
@@ -68,4 +68,36 @@ class LesoSpider(scrapy.Spider):
             time.sleep(5)
             # 再次发送请求
             yield scrapy.Request(url=url, callback=self.parse)
+    def translation(self,instring):
+        '''去掉数据中的空格换行等字符'''
+        move = dict.fromkeys((ord(c) for c in u"\xa0\n\t|│:：<>？?\\/*’‘“”\""))
+        outstring = instring.translate(move)
+        return outstring
+    def close(self, spider):
+         # 当爬虫退出的时候 关闭chrome
+         import datetime
+         import os
+         dt = datetime.datetime.now().strftime("%Y-%m-%d")
 
+         path = os.getcwd()  # 获取当前路径
+         count = 0
+         sizes = 0
+         for root, dirs, files in os.walk(path + "/" + self.keywords + "/" + dt):  # 遍历统计
+             for each in files:
+                 size = os.path.getsize(os.path.join(root, each))  # 获取文件大小
+                 sizes += size
+                 count += 1  # 统计文件夹下文件个数
+         count = count // 2
+         sizes = sizes / 1024.0 / 1024.0
+         sizes = round(sizes, 2)
+         videojson = {}
+         videojson['title'] = self.keywords
+         videojson['time'] = dt
+         videojson['keywords'] = self.keywords
+         videojson['file_number'] = count
+         videojson['file_size'] = str(sizes) + 'M'
+         dt = datetime.datetime.now().strftime("%Y-%m-%d")
+         videojson = json.dumps(videojson, ensure_ascii=False)
+         with open(self.keywords + "/" + dt + "/" + "task_info.json", 'w', encoding='utf-8') as fq:
+             fq.write(videojson)
+         print("spider closed")
