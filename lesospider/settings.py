@@ -52,6 +52,13 @@ DEFAULT_REQUEST_HEADERS = {
              'is_default_query=0&module=suggest_list&eid=3140056854456345989&experiment_id=102%3A0&is_trigger=1',
 }
 
+
+DB_HOST = "127.0.0.1"
+DB_PORT = 3306
+DB_USER = "root"
+DB_PWD = "root"
+DB_NAME = "test"
+DB_CHARSET = "utf8"
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
