@@ -35,7 +35,7 @@ class VdieoDownload(object):
         # SQL 查询语句 每次取出一条
         sql = "select title,url,play_count,keywords,info,upload_time,spider_time,video_time,site_name,video_category,tags,task_id" \
               " from videoitems " \
-              "where isdownload =0 and video_time <%d limit 0,1 " %time
+              "where isdownload =0 and video_time <%d limit 0,1 " %int(time)
         print(time)
         print(sql)
         try:
