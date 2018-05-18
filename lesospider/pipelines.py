@@ -9,9 +9,16 @@ import datetime
 import pymysql
 from scrapy.utils.project import get_project_settings
 
+from lesospider.videodownload import VdieoDownload
+
 
 class LesospiderPipeline(object):
     def process_item(self, item, spider):
+        db = pymysql.connect("127.0.0.1", "root", "root", "test", charset='utf8')
+        d = VdieoDownload(db=db)
+        d.Automatic_download(time=item['limit_time'])
+        # 关闭数据库连接
+        db.close()
         return item
 
 class MysqlPipeline(object):
@@ -48,11 +55,13 @@ class MysqlPipeline(object):
                 """select * from videoitems where url = %s""",
                 item['url'])
         # 是否有重复数据
-        repetition = self.cursor.fetchall()
+        repetition = self.cursor.fetchone()
 
         # 重复
-        if repetition or item['site_name'] !='letv' or 'iqiyi':
+        if repetition or (item['site_name'] !='letv'  and item['site_name'] !='iqiyi'):
                 print("此条重复抓取，没有存入数据库")
+        if int(item['video_time']) > item['limit_time']:
+            print('视频时间太长了')
         else:
             dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             sql = 'insert into videoitems(title,keywords,spider_time,url,site_name,video_time,play_count,upload_time,info,video_category,tags,task_id)' \
