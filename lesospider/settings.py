@@ -79,9 +79,10 @@ DB_CHARSET = "utf8"
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'lesospider.pipelines.LesospiderPipeline': 300,
-#}
+ITEM_PIPELINES = {
+   'lesospider.pipelines.LesospiderPipeline': 300,
+   'lesospider.pipelines.MysqlPipeline': 299,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
