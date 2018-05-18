@@ -60,7 +60,7 @@ class MysqlPipeline(object):
         # 重复
         if repetition or (item['site_name'] !='letv'  and item['site_name'] !='iqiyi'):
                 print("此条重复抓取，没有存入数据库")
-        if int(item['video_time']) > item['limit_time']:
+        if int(item['video_time']) > int(item['limit_time']):
             print('视频时间太长了')
         else:
             dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
