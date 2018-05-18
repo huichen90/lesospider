@@ -62,7 +62,7 @@ class LesoSpider(scrapy.Spider):
             yield item
 
         self.page += 1
-        if self.page <= 8:
+        if self.page <= 2:
             print("开始爬去第%d页" % self.page)
             url = self.url1 + str(self.page)
             time.sleep(5)
