@@ -37,7 +37,7 @@ class LesoSpider(scrapy.Spider):
         for video in video_list:
 
 
-
+            item['tags'] = []
             item['site_name'] = video.get('source','乐视网')
             if item['site_name'] !='letv':
                 item['url'] = video.get('url')
