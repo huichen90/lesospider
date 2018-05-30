@@ -88,7 +88,7 @@ class LesoSpider(scrapy.Spider):
                  size = os.path.getsize(os.path.join(root, each))  # 获取文件大小
                  sizes += size
                  count += 1  # 统计文件夹下文件个数
-         count = count // 2
+         count = int(count // 2)
          sizes = sizes / 1024.0 / 1024.0
          sizes = round(sizes, 2)
          videojson = {}
