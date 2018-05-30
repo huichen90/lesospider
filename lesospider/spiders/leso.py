@@ -9,12 +9,13 @@ from lesospider.items import LesospiderItem
 
 class LesoSpider(scrapy.Spider):
     name = 'leso'
-    start_urls = ['http://www.leso.cn/']
-    def __init__(self,keywords = '一带一路',limit=300,taskId = 4,*args,**kwargs):
+    def __init__(self,keywords='金正恩',limit=600,taskId=3,startDate=int(time.time())-3600*48,endDate=int(time.time()),*args,**kwargs):
         super(LesoSpider, self).__init__(*args, **kwargs)
         self.keywords = keywords
         # keywords = 'hello'
         self.limit_time = limit
+        self.start_date = startDate
+        self.end_date = endDate
         self.task_id = taskId
         self.site_name = '乐视网'
         self.info ='无简介'
@@ -34,6 +35,8 @@ class LesoSpider(scrapy.Spider):
         # print(video_list[0])
         item = LesospiderItem()
         item['limit_time'] = self.limit_time
+        item['start_date'] = self.start_date
+        item['end_date'] = self.end_date
         for video in video_list:
 
 
@@ -53,16 +56,14 @@ class LesoSpider(scrapy.Spider):
             item['video_time'] = video.get('duration','')
             time1 = video.get('releaseDate', '')
             if time1 !='':
-                timestamp = int(time1[:10])
-                time_local = time.localtime(timestamp)
-                item['upload_time'] = time.strftime("%Y-%m-%d ", time_local)
+                item['upload_time'] = int(time1[:10])
             else:
-                item['upload_time']=''
+                item['upload_time']=self.start_date
 
             yield item
 
         self.page += 1
-        if self.page <= 2:
+        if self.page <= 3:
             print("开始爬去第%d页" % self.page)
             url = self.url1 + str(self.page)
             time.sleep(5)
@@ -70,7 +71,7 @@ class LesoSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse)
     def translation(self,instring):
         '''去掉数据中的空格换行等字符'''
-        move = dict.fromkeys((ord(c) for c in u"\xa0\n\t|│:：<>？?\\/*’‘“”\""))
+        move = dict.fromkeys((ord(c) for c in u"\u0001\u0002\xa0\n\t|│:：<>？?\\/*’‘“”\""))
         outstring = instring.translate(move)
         return outstring
     def close(self, spider):
