@@ -5,6 +5,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import datetime
+import logging
 
 import pymysql
 from scrapy.utils.project import get_project_settings
@@ -12,16 +13,7 @@ from scrapy.utils.project import get_project_settings
 from lesospider.videodownload import VdieoDownload
 
 
-class LesospiderPipeline(object):
-    def process_item(self, item, spider):
-        db = pymysql.connect("127.0.0.1", "root", "root", "test", charset='utf8')
-        d = VdieoDownload(db=db)
-        d.Automatic_download(time=item['limit_time'])
-        # 关闭数据库连接
-        db.close()
-        return item
-
-class MysqlPipeline(object):
+class Mysql(object):
     """存储到数据库中"""
 
     def __init__(self):
@@ -48,6 +40,23 @@ class MysqlPipeline(object):
     def colose_spider(self,spider):
         self.conn.close()
         self.cursor.close()
+
+
+class LesospiderPipeline(Mysql):
+    def process_item(self, item, spider):
+        try:
+            d = VdieoDownload(db=self.conn, cursor=self.cursor)
+            d.Automatic_download()
+        except Exception as e:
+            print(e)
+            logging.error('下载失败 %s' % e)
+        return item
+
+
+class MysqlPipeline(Mysql):
+    """存储到数据库中"""
+
+
     def process_item(self,item,spider):
 
         # 查重处理
@@ -60,9 +69,10 @@ class MysqlPipeline(object):
         # 重复
         if repetition or (item['site_name'] !='letv'  and item['site_name'] !='iqiyi'):
                 print("此条重复抓取，没有存入数据库")
-        if int(item['video_time']) > int(item['limit_time']):
+        elif int(item['video_time']) > int(item['limit_time']):
             print('视频时间太长了')
-        else:
+        elif int(item['upload_time']) >= int(item['start_date']) and int(item['upload_time']) <= int(item['end_date']):
+            item['upload_time'] = self.ts2dts(item['upload_time'])
             dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             sql = 'insert into videoitems(title,keywords,spider_time,url,site_name,video_time,play_count,upload_time,info,video_category,tags,task_id)' \
                   ' values( "%s","%s","%s","%s", "%s" ,"%s","%s", "%s", "%s","%s","%s","%s")' \
@@ -71,7 +81,13 @@ class MysqlPipeline(object):
             #执行SQL语句
             self.cursor.execute(sql)
             self.conn.commit()
-
-
+        else:
+            print('发布日期不符合要求，没有存入数据库')
         return item
 
+    def ts2dts(self,timeStamp):
+        '''timestamp translate to datestring'''
+        import time
+        timeArray = time.localtime(timeStamp)
+        datestr = time.strftime("%Y-%m-%d", timeArray)
+        return datestr
