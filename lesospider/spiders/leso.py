@@ -9,7 +9,7 @@ from lesospider.items import LesospiderItem
 
 class LesoSpider(scrapy.Spider):
     name = 'leso'
-    def __init__(self,keywords='金正恩',limit=600,taskId=3,startDate=int(time.time())-3600*48,endDate=int(time.time()),*args,**kwargs):
+    def __init__(self,keywords='金正恩',limit=600,taskId=3,startDate=int(time.time())-3600*48*7,endDate=int(time.time()),*args,**kwargs):
         super(LesoSpider, self).__init__(*args, **kwargs)
         self.keywords = keywords
         # keywords = 'hello'
