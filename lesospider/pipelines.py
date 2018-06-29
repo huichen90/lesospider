@@ -74,8 +74,8 @@ class MysqlPipeline(Mysql):
         elif int(item['upload_time']) >= int(item['start_date']) and int(item['upload_time']) <= int(item['end_date']):
             item['upload_time'] = self.ts2dts(item['upload_time'])
             dt = datetime.datetime.now().strftime("%Y-%m-%d")
-            sql = 'insert into videoitems(title,keywords,spider_time,url,site_name,video_time,play_count,upload_time,info,video_category,tags,task_id)' \
-                  ' values( "%s","%s","%s","%s", "%s" ,"%s","%s", "%s", "%s","%s","%s","%s")' \
+            sql = 'insert into videoitems(title,keywords,spider_time,url,site_name,video_time,play_count,upload_time,info,video_category,tags,task_id,isdownload)' \
+                  ' values( "%s","%s","%s","%s", "%s" ,"%s","%s", "%s", "%s","%s","%s","%s",0)' \
                   %(item['title'],item['keywords'],dt,item['url'],item['site_name'],item['video_time'],item["play_count"],item['upload_time'],item['info'],
                     item['video_category'],item['tags'],item['task_id'],)
             #执行SQL语句
