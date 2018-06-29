@@ -9,14 +9,15 @@ from lesospider.items import LesospiderItem
 class LesoSpider(scrapy.Spider):
     name = 'leso'
 
-    def __init__(self, keywords='金正恩', limit=600, task_id=2, startDate=int(time.time()) - 3600 * 48 * 87,
+    def __init__(self, keywords='金正恩', video_time_long=600, video_time_short=0, task_id=2, startDate=int(time.time()) - 3600 * 48 * 87,
                  endDate=int(time.time()), *args, **kwargs):
         super(LesoSpider, self).__init__(*args, **kwargs)
         self.keywords = keywords
         # keywords = 'hello'
-        self.limit_time = limit
-        self.start_date = startDate
-        self.end_date = endDate
+        self.video_time_long = video_time_long
+        self.video_time_short = video_time_short
+        self.upload_time_start_date = startDate
+        self.upload_time_end_date = endDate
         self.task_id = task_id
         self.site_name = '乐视网'
         self.info = '无简介'
@@ -36,9 +37,10 @@ class LesoSpider(scrapy.Spider):
         # print(len(video_list))
         # print(video_list[0])
         item = LesospiderItem()
-        item['limit_time'] = self.limit_time
-        item['start_date'] = self.start_date
-        item['end_date'] = self.end_date
+        item['video_time_long'] = self.video_time_long
+        item['video_time_short'] = self.video_time_short
+        item['start_date'] = self.upload_time_start_date
+        item['end_date'] = self.upload_time_end_date
         for video in video_list:
 
             item['tags'] = []

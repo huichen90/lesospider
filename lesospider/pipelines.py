@@ -69,8 +69,8 @@ class MysqlPipeline(Mysql):
         # 重复
         if repetition or (item['site_name'] !='letv'  and item['site_name'] !='iqiyi'):
                 print("此条重复抓取，没有存入数据库")
-        elif int(item['video_time']) > int(item['limit_time']):
-            print('视频时间太长了')
+        elif int(item['video_time']) > int(item['video_time_long']) and int(item['video_time']) < int(item['video_time_short']):
+            print('视频时间不满足要求')
         elif int(item['upload_time']) >= int(item['start_date']) and int(item['upload_time']) <= int(item['end_date']):
             item['upload_time'] = self.ts2dts(item['upload_time'])
             dt = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -78,7 +78,7 @@ class MysqlPipeline(Mysql):
                   ' values( "%s","%s","%s","%s", "%s" ,"%s","%s", "%s", "%s","%s","%s","%s",0)' \
                   %(item['title'],item['keywords'],dt,item['url'],item['site_name'],item['video_time'],item["play_count"],item['upload_time'],item['info'],
                     item['video_category'],item['tags'],item['task_id'],)
-            #执行SQL语句
+            # 执行SQL语句
             self.cursor.execute(sql)
             self.conn.commit()
         else:
