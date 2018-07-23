@@ -7,7 +7,7 @@ from lesospider.items import LesospiderItem
 
 
 class LesoSpider(scrapy.Spider):
-    name = 'leso'
+    name = '关键词采集'
 
     def __init__(self, keywords='金正恩', video_time_long=600, video_time_short=0, task_id=2, startDate=int(time.time()) - 3600 * 48 * 87,
                  endDate=int(time.time()), *args, **kwargs):
