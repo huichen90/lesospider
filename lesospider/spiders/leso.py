@@ -32,10 +32,7 @@ class LesoSpider(scrapy.Spider):
         # print('正在爬去第1页' )
 
     def parse(self, response):
-        # print(response.text)
         video_list = json.loads(response.text)['data_list']
-        # print(len(video_list))
-        # print(video_list[0])
         item = LesospiderItem()
         item['video_time_long'] = self.video_time_long
         item['video_time_short'] = self.video_time_short
@@ -88,7 +85,7 @@ class LesoSpider(scrapy.Spider):
         path = os.getcwd()  # 获取当前路径
         count = 0
         sizes = 0
-        for root, dirs, files in os.walk(path + "/" + self.keywords + "/" + dt):  # 遍历统计
+        for root, dirs, files in os.walk(path + "/cetc_data_producer/videos/" + self.keywords.replace(' ', '_') + "/" + dt):  # 遍历统计
             for each in files:
                 size = os.path.getsize(os.path.join(root, each))  # 获取文件大小
                 sizes += size
@@ -104,6 +101,7 @@ class LesoSpider(scrapy.Spider):
         videojson['file_size'] = str(sizes) + 'M'
         dt = datetime.datetime.now().strftime("%Y-%m-%d")
         videojson = json.dumps(videojson, ensure_ascii=False)
-        with open(self.keywords + "/" + dt + "/" + "task_info.json", 'w', encoding='utf-8') as fq:
+        with open('cetc_data_producer/videos/' + self.keywords.replace(' ', '_') + "/" + dt + "/" + "task_info.json",
+                  'w', encoding='utf-8') as fq:
             fq.write(videojson)
         print("spider closed")

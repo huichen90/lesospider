@@ -8,8 +8,10 @@ import datetime
 import logging
 
 import pymysql
+from langdetect import detect
 from scrapy.utils.project import get_project_settings
 
+from lesospider.translate import Translate
 from lesospider.videodownload import VdieoDownload
 
 
@@ -74,10 +76,18 @@ class MysqlPipeline(Mysql):
         elif int(item['upload_time']) >= int(item['start_date']) and int(item['upload_time']) <= int(item['end_date']):
             item['upload_time'] = self.ts2dts(item['upload_time'])
             dt = datetime.datetime.now().strftime("%Y-%m-%d")
-            sql = 'insert into videoitems(title,keywords,spider_time,url,site_name,video_time,play_count,upload_time,info,video_category,tags,task_id,isdownload)' \
-                  ' values( "%s","%s","%s","%s", "%s" ,"%s","%s", "%s", "%s","%s","%s","%s",0)' \
-                  %(item['title'],item['keywords'],dt,item['url'],item['site_name'],item['video_time'],item["play_count"],item['upload_time'],item['info'],
-                    item['video_category'],item['tags'],item['task_id'],)
+            if detect(item['title']) != 'zh-cn':
+                t = Translate(q=item['title'])  # 翻译
+                item['title_cn'], item['language'] = t.translate()
+            else:
+                item['title_cn'] = item['title']
+                item['language'] = '中文'
+            sql = 'insert into videoitems(title,keywords,spider_time,url,site_name,video_time,' \
+                  'play_count,upload_time,info,video_category,tags,task_id,isdownload,lg,title_cn)' \
+                  ' values( "%s","%s","%s","%s", "%s" ,"%s","%s", "%s", "%s","%s","%s","%s",0,"%s","%s")' \
+                  % (item['title'], item['keywords'], dt, item['url'], item['site_name'], item['video_time'],
+                     item["play_count"], item['upload_time'], item['info'],
+                     item['video_category'], item['tags'], item['task_id'], item['language'], item['title_cn'])
             # 执行SQL语句
             self.cursor.execute(sql)
             self.conn.commit()

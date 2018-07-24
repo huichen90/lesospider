@@ -12,6 +12,7 @@ class LesospiderItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     title = scrapy.Field()
+    title_cn = scrapy.Field()
     keywords = scrapy.Field()
     tags = scrapy.Field()
     upload_time = scrapy.Field()
@@ -26,3 +27,4 @@ class LesospiderItem(scrapy.Item):
     task_id = scrapy.Field()
     start_date = scrapy.Field()
     end_date = scrapy.Field()
+    language = scrapy.Field()
