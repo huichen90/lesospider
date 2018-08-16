@@ -6,15 +6,18 @@ import datetime
 import youtube_dl
 import json
 import time
-# 打开数据库连dic = json.dumps(duck)接
 
+# 打开数据库连dic = json.dumps(duck)接
+from scrapy.utils.project import get_project_settings
 
 
 class VdieoDownload(object):
     """download videos """
+    settings = get_project_settings()
+    videos_save_dir = settings['VIDEOS_SAVE_DIR']
 
-    def __init__(self,db,cursor):
-        self.db=db
+    def __init__(self, db, cursor):
+        self.db = db
         self.url = ''
         self.title = ''
         self.cursor = cursor
@@ -22,9 +25,10 @@ class VdieoDownload(object):
         self.play_count = ''
         self.keywords = ''
         self.info = ''
-        self.upload_time =''
-        self.video_time=''
-    def translation(self,instring):
+        self.upload_time = ''
+        self.video_time = ''
+
+    def translation(self, instring):
         '''去掉数据中的空格换行等字符'''
         move = dict.fromkeys((ord(c) for c in u"\xa0\n\t"))
         outstring = instring.translate(move)
@@ -60,9 +64,9 @@ class VdieoDownload(object):
         except:
             print("Error: unable to fetch data")
 
-    def UpdateStatus(self,num):
+    def UpdateStatus(self, num):
         # SQL 更新语句 更改isdownload的值
-        sql = "UPDATE videoitems SET isdownload =%d WHERE url = '%s'" % (num,self.url)
+        sql = "UPDATE videoitems SET isdownload =%d WHERE url = '%s'" % (num, self.url)
         try:
             # 执行SQL语句
             self.cursor.execute(sql)
@@ -71,15 +75,16 @@ class VdieoDownload(object):
         except:
             # 发生错误时回滚
             self.db.rollback()
+
     def Download(self):
-        #下载视频
+        # 下载视频
         self.dt = datetime.datetime.now().strftime("%Y-%m-%d")
         options = {}
         options['retries'] = 5
         # options['proxy'] = 'http://127.0.0.1:8118'
-        options['outtmpl'] = 'cetc_data_producer/videos/' + self.keywords.replace(' ', '_') + "/" + self.dt + "/" + \
+        options['outtmpl'] = self.videos_save_dir + '/' + self.keywords.replace(' ', '_') + "/" + self.dt + "/" + \
                              self.title + '.%(ext)s'
-        ydl = youtube_dl.YoutubeDL( options)
+        ydl = youtube_dl.YoutubeDL(options)
 
         with ydl:
             result = ydl.extract_info(
@@ -99,19 +104,18 @@ class VdieoDownload(object):
         self.videojson["spider_time"] = self.spider_time
         self.videojson["url"] = self.url
         self.videojson["info"] = self.info
-        self.videojson["info_cn"] =''
+        self.videojson["info_cn"] = ''
         self.videojson["site_name"] = self.site_name
         self.videojson["site_name_cn"] = self.site_name
         self.videojson["play_count"] = self.play_count
         self.videojson["section"] = self.video_category
         self.videojson["video_lang"] = self.language
 
-        if self.tags =="['']":
+        if self.tags == "['']":
             self.videojson["keywords"] = []
         else:
             self.videojson["keywords"] = self.tags
         self.videojson["video_time"] = self.video_time
-
 
     def WriteJson(self):
         """
@@ -119,17 +123,18 @@ class VdieoDownload(object):
         :return:
         """
         videojson = json.dumps(self.videojson, ensure_ascii=False)
-        with open('cetc_data_producer/videos/' + self.keywords.replace(' ', '_') + "/" + self.dt + "/" +
-                  self.videojson['title'] + ".json", 'w', encoding='utf-8') as fq:
+        with open(self.videos_save_dir + '/' + self.keywords.replace(' ', '_') +
+                  "/" + self.dt + "/" + self.videojson['title'] + ".json", 'w',
+                  encoding='utf-8') as fq:
             fq.write(videojson)
 
     def AddVideoJson(self):
         # SQL 更新语句 更新视频的信息
-        tags = json.dumps(self.videojson["tags"],ensure_ascii=False)
+        tags = json.dumps(self.videojson["tags"], ensure_ascii=False)
         info = json.dumps(self.videojson["info"], ensure_ascii=False)
         sql = "UPDATE videoitems SET upload_time = '%s',info='%s' ,play_count='%s',tags='%s'\
-              WHERE url = '%s'"% \
-              (self.videojson["upload_time"],info,self.videojson["play_count"],tags ,self.url)
+              WHERE url = '%s'" % \
+              (self.videojson["upload_time"], info, self.videojson["play_count"], tags, self.url)
         try:
             # 执行SQL语句
             self.cursor.execute(sql)
@@ -139,6 +144,7 @@ class VdieoDownload(object):
             # 发生错误时回滚
             print(e)
             self.db.rollback()
+
     def Automatic_download(self):
         import threading
         l = threading.Lock()
@@ -157,7 +163,7 @@ class VdieoDownload(object):
 
         l.release()
 
-    def Traditional2Simplified(self,sentence):
+    def Traditional2Simplified(self, sentence):
         '''
         将sentence中的繁体字转为简体字
         :param sentence: 待转换的句子
@@ -168,7 +174,7 @@ class VdieoDownload(object):
 
 
 if __name__ == '__main__':
-    db = pymysql.connect("localhost", "root", "root", "test",charset='utf8')
+    db = pymysql.connect("localhost", "root", "root", "test", charset='utf8')
     d = VdieoDownload(db=db)
     d.Automatic_download()
     # 关闭数据库连接

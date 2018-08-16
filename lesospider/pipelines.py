@@ -69,11 +69,11 @@ class MysqlPipeline(Mysql):
         repetition = self.cursor.fetchone()
 
         # 重复
-        if repetition or (item['site_name'] !='letv'  and item['site_name'] !='iqiyi'):
-                print("此条重复抓取，没有存入数据库")
-        elif int(item['video_time']) > int(item['video_time_long']) and int(item['video_time']) < int(item['video_time_short']):
+        if repetition or (item['site_name'] != 'letv' and item['site_name'] != 'iqiyi'):
+            print("此条重复抓取，没有存入数据库")
+        elif int(item['video_time']) > int(item['video_time_long']) or int(item['video_time']) < int(item['video_time_short']):
             print('视频时间不满足要求')
-        elif int(item['upload_time']) >= int(item['start_date']) and int(item['upload_time']) <= int(item['end_date']):
+        elif int(float(item['start_date'])) <= int(float(item['upload_time'])) <= int(float(item['end_date'])):
             item['upload_time'] = self.ts2dts(item['upload_time'])
             dt = datetime.datetime.now().strftime("%Y-%m-%d")
             if detect(item['title']) != 'zh-cn':
