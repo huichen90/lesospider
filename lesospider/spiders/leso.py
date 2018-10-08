@@ -2,14 +2,15 @@
 import json
 import time
 import scrapy
-
+import re
+import stat
 from lesospider.items import LesospiderItem
 
 
 class LesoSpider(scrapy.Spider):
     name = '关键词采集'
 
-    def __init__(self, keywords='金正恩', video_time_long=600, video_time_short=0, task_id=2, startDate=int(time.time()) - 3600 * 48 * 87,
+    def __init__(self, keywords='一带一路', video_time_long=600, video_time_short=0, task_id=2, startDate=int(time.time()) - 3600 * 48 * 87,
                  endDate=int(time.time()), *args, **kwargs):
         super(LesoSpider, self).__init__(*args, **kwargs)
         self.keywords = keywords
@@ -63,7 +64,7 @@ class LesoSpider(scrapy.Spider):
             yield item
 
         self.page += 1
-        if self.page <= 3:
+        if self.page <= 5:
             print("开始爬去第%d页" % self.page)
             url = self.url1 + str(self.page)
             time.sleep(5)
@@ -91,6 +92,7 @@ class LesoSpider(scrapy.Spider):
         for root, dirs, files in os.walk(path + "/" + videos_save_dir + "/" + self.keywords.replace(' ', '_') + "/" + dt):  # 遍历统计
             for each in files:
                 size = os.path.getsize(os.path.join(root, each))  # 获取文件大小
+                os.chmod(os.path.join(root, each), stat.S_IRWXO + stat.S_IRWXG + stat.S_IRWXU)
                 sizes += size
                 count += 1  # 统计文件夹下文件个数
         count = count // 2
@@ -107,4 +109,12 @@ class LesoSpider(scrapy.Spider):
         with open(videos_save_dir + '/' + self.keywords.replace(' ', '_') + "/" + dt + "/" + "task_info.json",
                   'w', encoding='utf-8') as fq:
             fq.write(videojson)
+        os.chmod(videos_save_dir + '/' + self.keywords.replace(' ', '_') + "/" + dt + "/" + "task_info.json",
+                 stat.S_IRWXO + stat.S_IRWXG + stat.S_IRWXU)
+        os.chmod(videos_save_dir + '/' + self.keywords.replace(' ', '_') + "/" + dt,
+                 stat.S_IRWXO + stat.S_IRWXG + stat.S_IRWXU)
+        os.chmod(videos_save_dir + '/' + self.keywords.replace(' ', '_'),
+                 stat.S_IRWXO + stat.S_IRWXG + stat.S_IRWXU)
+        os.chmod(videos_save_dir,
+                 stat.S_IRWXO + stat.S_IRWXG + stat.S_IRWXU)
         print("spider closed")

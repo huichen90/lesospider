@@ -30,16 +30,15 @@ class Mysql(object):
         self.connect()
 
     def connect(self):
-        self.conn = pymysql.connect(host = self.host,
-                                    port = self.port,
-                                    user = self.user,
-                                    password = self.pwd,
-                                    db = self.name,
-                                    charset = self.charset)
+        self.conn = pymysql.connect(host=self.host,
+                                    port=self.port,
+                                    user=self.user,
+                                    password=self.pwd,
+                                    db=self.name,
+                                    charset=self.charset)
         self.cursor = self.conn.cursor()
 
-
-    def colose_spider(self,spider):
+    def colose_spider(self, spider):
         self.conn.close()
         self.cursor.close()
 
@@ -58,20 +57,20 @@ class LesospiderPipeline(Mysql):
 class MysqlPipeline(Mysql):
     """存储到数据库中"""
 
-
-    def process_item(self,item,spider):
+    def process_item(self, item, spider):
 
         # 查重处理
         self.cursor.execute(
-                """select * from videoitems where url = %s""",
-                item['url'])
+            """select * from videoitems where url = %s""",
+            item['url'])
         # 是否有重复数据
         repetition = self.cursor.fetchone()
 
         # 重复
         if repetition or (item['site_name'] != 'letv' and item['site_name'] != 'iqiyi'):
             print("此条重复抓取，没有存入数据库")
-        elif int(item['video_time']) > int(item['video_time_long']) or int(item['video_time']) < int(item['video_time_short']):
+        elif int(item['video_time']) > int(item['video_time_long']) or int(item['video_time']) < int(
+                item['video_time_short']):
             print('视频时间不满足要求')
         elif int(float(item['start_date'])) <= int(float(item['upload_time'])) <= int(float(item['end_date'])):
             item['upload_time'] = self.ts2dts(item['upload_time'])
@@ -95,7 +94,7 @@ class MysqlPipeline(Mysql):
             print('发布日期不符合要求，没有存入数据库')
         return item
 
-    def ts2dts(self,timeStamp):
+    def ts2dts(self, timeStamp):
         '''timestamp translate to datestring'''
         import time
         timeArray = time.localtime(timeStamp)
